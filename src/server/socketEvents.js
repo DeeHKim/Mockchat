@@ -12,6 +12,7 @@ exports = module.exports = function(io) {
     });
 
     socket.on('new message', function(msg) {
+      console.log(msg);
       socket.broadcast.to(msg.channelID).emit('new message', msg);
     });
 
