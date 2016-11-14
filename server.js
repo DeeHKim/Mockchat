@@ -70,7 +70,7 @@ app.post('/messages/newMessage', controllers.messages.newMessage);
 
 
 
-var server = app.listen(3000, function() {
+var server = app.listen(process.env.PORT, function() {
   console.log('%s listening at %s', 3000);
 });
 
