@@ -17,7 +17,6 @@ class ChatPage extends Component {
   }
 
   componentDidMount () {
-    console.log('MYFUCKINGPROPS', this.props);
     const {receiveMessage} = this.props;
     var that = this;
     this.props.messages(this.props.chatData.channelID);
@@ -27,6 +26,12 @@ class ChatPage extends Component {
       console.log('this.props', this.props)
       receiveMessage(msg);
     });
+  }
+
+  componentDidUpdate() {
+    let d = document.getElementById('scroll');
+    let isScrolledToBottom = d.scrollHeight - d.clientHeight <= d.scrollTop + 1;
+    d.scrollTop = d.scrollHeight;
   }
 
   chatMessages() {
@@ -49,7 +54,7 @@ class ChatPage extends Component {
   submitMessage(e) {
     console.log("HI", e);
     console.log("SOCKETSOCKET", socket);
-    // e.preventDefault();
+    e.preventDefault();
     let data = {
       eventID: this.props.chatData.channelID,
       text: this.state.input,
@@ -68,16 +73,19 @@ class ChatPage extends Component {
       <div>
         <h1>{this.props.chatData.name}</h1>
         <div
-          style={{width: 300, height: 250, overflow: "scroll",}}
+          id="scroll"
+          style={{width: 300, height: 250, overflow: "auto",}}
         >
         {this.chatMessages()}
         </div>
+        <form onSubmit={this.submitMessage.bind(this)}>
         <input
         id="hiii"
         type="text"
         value={this.state.input}
         onChange={this.handleInputChange.bind(this)}
         />
+        </form>
         <Button onClick={this.submitMessage.bind(this)}>Submit</Button>
       </div>
     )

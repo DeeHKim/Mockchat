@@ -63,7 +63,7 @@
 /******/ 	}
 
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "c65924243cece261cff4"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "417d3387421469b4cdc8"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 
@@ -47444,7 +47444,6 @@
 	  _createClass(ChatPage, [{
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      console.log('MYFUCKINGPROPS', this.props);
 	      var receiveMessage = this.props.receiveMessage;
 
 	      var that = this;
@@ -47455,6 +47454,13 @@
 	        console.log('this.props', this.props);
 	        receiveMessage(msg);
 	      });
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      var d = document.getElementById('scroll');
+	      var isScrolledToBottom = d.scrollHeight - d.clientHeight <= d.scrollTop + 1;
+	      d.scrollTop = d.scrollHeight;
 	    }
 	  }, {
 	    key: 'chatMessages',
@@ -47488,7 +47494,7 @@
 	    value: function submitMessage(e) {
 	      console.log("HI", e);
 	      console.log("SOCKETSOCKET", socket);
-	      // e.preventDefault();
+	      e.preventDefault();
 	      var data = {
 	        eventID: this.props.chatData.channelID,
 	        text: this.state.input,
@@ -47515,16 +47521,21 @@
 	        _react2.default.createElement(
 	          'div',
 	          {
-	            style: { width: 300, height: 250, overflow: "scroll" }
+	            id: 'scroll',
+	            style: { width: 300, height: 250, overflow: "auto" }
 	          },
 	          this.chatMessages()
 	        ),
-	        _react2.default.createElement('input', {
-	          id: 'hiii',
-	          type: 'text',
-	          value: this.state.input,
-	          onChange: this.handleInputChange.bind(this)
-	        }),
+	        _react2.default.createElement(
+	          'form',
+	          { onSubmit: this.submitMessage.bind(this) },
+	          _react2.default.createElement('input', {
+	            id: 'hiii',
+	            type: 'text',
+	            value: this.state.input,
+	            onChange: this.handleInputChange.bind(this)
+	          })
+	        ),
 	        _react2.default.createElement(
 	          _reactBootstrap.Button,
 	          { onClick: this.submitMessage.bind(this) },
