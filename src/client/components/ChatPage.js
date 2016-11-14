@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 import {messages, newMessage, receiveMessage} from '../actions/actions'
 import io from 'socket.io-client';
 
-const socket = io('', { path: '/api/chat' });
+// const socket = io('', { path: '/api/chat' });
 
 class ChatPage extends Component {
   constructor(props) {
