@@ -63,7 +63,7 @@
 /******/ 	}
 
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "417d3387421469b4cdc8"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "9be80b1b912a9ea7d34c"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 
@@ -45724,7 +45724,7 @@
 
 	function eventList() {
 	  return function (dispatch) {
-	    _axios2.default.post('http://localhost:3000/events/getEvents', { yo: "hi" }).then(function (res) {
+	    _axios2.default.post('events/getEvents', { yo: "hi" }).then(function (res) {
 	      dispatch({
 	        type: EVENT,
 	        payload: res.data.data
@@ -45749,14 +45749,14 @@
 	}
 
 	function createEvent(name) {
-	  _axios2.default.post('http://localhost:3000/events/newEvent', {
+	  _axios2.default.post('events/newEvent', {
 	    name: name
 	  });
 	}
 
 	function messages(input) {
 	  return function (dispatch) {
-	    _axios2.default.post('http://localhost:3000/messages/getMessages', {
+	    _axios2.default.post('messages/getMessages', {
 	      _id: input
 	    }).then(function (res) {
 	      console.log(res);
@@ -45770,7 +45770,7 @@
 
 	function newMessage(input) {
 	  return function (dispatch) {
-	    _axios2.default.post('http://localhost:3000/messages/newMessage', input).then(function (res) {
+	    _axios2.default.post('messages/newMessage', input).then(function (res) {
 	      console.log('fuck you');
 	    });
 	  };

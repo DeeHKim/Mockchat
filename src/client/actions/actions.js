@@ -18,7 +18,7 @@ export function setName(input) {
 
 export function eventList() {
   return dispatch => {
-    Axios.post('http://localhost:3000/events/getEvents', {yo:"hi"}).then(function(res) {
+    Axios.post('events/getEvents', {yo:"hi"}).then(function(res) {
       dispatch({
         type: EVENT,
         payload: res.data.data
@@ -43,14 +43,14 @@ export function receiveMessage(input) {
 }
 
 export function createEvent(name) {
-  Axios.post('http://localhost:3000/events/newEvent', {
+  Axios.post('events/newEvent', {
     name: name
   });
 }
 
 export function messages(input) {
   return dispatch => {
-    Axios.post('http://localhost:3000/messages/getMessages', {
+    Axios.post('messages/getMessages', {
       _id: input
     }).then(function(res) {
       console.log(res);
@@ -64,7 +64,7 @@ export function messages(input) {
 
 export function newMessage(input) {
   return dispatch => {
-  Axios.post('http://localhost:3000/messages/newMessage', input).then(function(res) {
+  Axios.post('messages/newMessage', input).then(function(res) {
     console.log('fuck you');
   });
 };
