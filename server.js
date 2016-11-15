@@ -8,8 +8,8 @@ var bodyParser = require('body-parser');
 // var app = express();
 var cors = require('cors');
 
+mongoose.connect("mongodb://deehkim:Dankller51@ds153667.mlab.com:53667/heroku_2516295b");
 // mongoose.connect("mongodb://keybloc:keybloc123@ds149567.mlab.com:49567/keybloc_test");
-mongoose.connect(process.env.MONGOLAB_URI);
 
 
 var controllers = {};
