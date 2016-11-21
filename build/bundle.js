@@ -63,7 +63,7 @@
 /******/ 	}
 
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "9be80b1b912a9ea7d34c"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "04fa9d52f77d1c9e109b"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 
@@ -45693,7 +45693,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.RECEIVEMESSAGE = exports.MESSAGES = exports.SETCHANNEL = exports.EVENT = exports.USER = undefined;
+	exports.REMOVETYPER = exports.ADDTYPER = exports.RECEIVEMESSAGE = exports.MESSAGES = exports.SETCHANNEL = exports.EVENT = exports.USER = undefined;
 	exports.setName = setName;
 	exports.eventList = eventList;
 	exports.setChannel = setChannel;
@@ -45701,6 +45701,8 @@
 	exports.createEvent = createEvent;
 	exports.messages = messages;
 	exports.newMessage = newMessage;
+	exports.type = type;
+	exports.stopTyping = stopTyping;
 
 	var _axios = __webpack_require__(508);
 
@@ -45713,6 +45715,8 @@
 	var SETCHANNEL = exports.SETCHANNEL = 'SETCHANNEL';
 	var MESSAGES = exports.MESSAGES = 'MESSAGES';
 	var RECEIVEMESSAGE = exports.RECEIVEMESSAGE = 'RECEIVEMESSAGE';
+	var ADDTYPER = exports.ADDTYPER = "ADDTYPER";
+	var REMOVETYPER = exports.REMOVETYPER = "REMOVETYPER";
 
 	function setName(input) {
 	  var name = input;
@@ -45773,6 +45777,20 @@
 	    _axios2.default.post('messages/newMessage', input).then(function (res) {
 	      console.log('fuck you');
 	    });
+	  };
+	}
+
+	function type(user) {
+	  return {
+	    type: ADDTYPER,
+	    payload: user
+	  };
+	}
+
+	function stopTyping(user) {
+	  return {
+	    type: REMOVETYPER,
+	    payload: user
 	  };
 	}
 
@@ -47425,7 +47443,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var socket = (0, _socket2.default)('', { path: '/api/chat' });
+	var socket = null;
 
 	var ChatPage = function (_Component) {
 	  _inherits(ChatPage, _Component);
@@ -47436,7 +47454,9 @@
 	    var _this = _possibleConstructorReturn(this, (ChatPage.__proto__ || Object.getPrototypeOf(ChatPage)).call(this, props));
 
 	    _this.state = {
-	      input: ""
+	      input: "",
+	      typing: false,
+	      typerList: []
 	    };
 	    return _this;
 	  }
@@ -47444,7 +47464,11 @@
 	  _createClass(ChatPage, [{
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      var receiveMessage = this.props.receiveMessage;
+	      socket = (0, _socket2.default)('', { path: '/api/chat' });
+	      var _props = this.props,
+	          receiveMessage = _props.receiveMessage,
+	          type = _props.type,
+	          stopTyping = _props.stopTyping;
 
 	      var that = this;
 	      this.props.messages(this.props.chatData.channelID);
@@ -47454,6 +47478,18 @@
 	        console.log('this.props', this.props);
 	        receiveMessage(msg);
 	      });
+	      socket.on('typing', function (user) {
+	        type(user);
+	      });
+	      socket.on('stop typing', function (user) {
+	        stopTyping(user);
+	      });
+	    }
+	  }, {
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      console.log("isthisunmounting");
+	      socket.emit('leave channel', this.props.chatData.channelID);
 	    }
 	  }, {
 	    key: 'componentDidUpdate',
@@ -47465,6 +47501,7 @@
 	  }, {
 	    key: 'chatMessages',
 	    value: function chatMessages() {
+	      console.log("chatstate", this.state);
 	      return this.props.chatData.list.map(function (entry) {
 	        return _react2.default.createElement(
 	          'div',
@@ -47488,6 +47525,14 @@
 	      this.setState({
 	        input: e.target.value
 	      });
+	      if (e.target.value.length > 0 && !this.state.typing) {
+	        socket.emit('typing', { user: this.props.userName, channel: this.props.chatData.channelID });
+	        this.setState({ typing: true });
+	      }
+	      if (e.target.value.length === 0 && this.state.typing) {
+	        socket.emit('stop typing', { user: this.props.userName, channel: this.props.chatData.channelID });
+	        this.setState({ typing: false });
+	      }
 	    }
 	  }, {
 	    key: 'submitMessage',
@@ -47501,10 +47546,22 @@
 	        user: this.props.userName
 	      };
 	      socket.emit('new message', data);
+	      socket.emit('stop typing', { user: this.props.userName, channel: this.props.chatData.channelID });
 	      this.props.newMessage(data);
 	      this.props.receiveMessage(data);
-	      this.setState({ input: "" }, function () {
+	      this.setState({ input: "", typing: false }, function () {
 	        document.getElementById("hiii").value = this.state.input;
+	      });
+	    }
+	  }, {
+	    key: 'typers',
+	    value: function typers() {
+	      return this.props.chatData.typingList.map(function (user) {
+	        return _react2.default.createElement(
+	          'span',
+	          null,
+	          user
+	        );
 	      });
 	    }
 	  }, {
@@ -47540,6 +47597,16 @@
 	          _reactBootstrap.Button,
 	          { onClick: this.submitMessage.bind(this) },
 	          'Submit'
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          null,
+	          this.typers(),
+	          _react2.default.createElement(
+	            'span',
+	            null,
+	            ' is typing...'
+	          )
 	        )
 	      );
 	    }
@@ -47556,7 +47623,9 @@
 	}, {
 	  messages: _actions.messages,
 	  newMessage: _actions.newMessage,
-	  receiveMessage: _actions.receiveMessage
+	  receiveMessage: _actions.receiveMessage,
+	  type: _actions.type,
+	  stopTyping: _actions.stopTyping
 	})(ChatPage);
 
 /***/ },
@@ -55060,30 +55129,58 @@
 	  value: true
 	});
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	exports.default = function () {
 	  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : INITIAL_STATE;
 	  var action = arguments[1];
 
-	  switch (action.type) {
-	    case _actions.SETCHANNEL:
-	      return _extends({}, state, { channelID: action.payload._id, name: action.payload.name });
-	    case _actions.MESSAGES:
-	      return _extends({}, state, { list: action.payload });
-	    case _actions.RECEIVEMESSAGE:
-	      console.log('awefwekf', action.payload);
-	      return _extends({}, state, { list: [].concat(_toConsumableArray(state.list), [action.payload]) });
-	    default:
-	      return state;
-	  }
+	  var _ret = function () {
+	    switch (action.type) {
+	      case _actions.SETCHANNEL:
+	        return {
+	          v: _extends({}, state, { channelID: action.payload._id, name: action.payload.name })
+	        };
+	      case _actions.MESSAGES:
+	        return {
+	          v: _extends({}, state, { list: action.payload })
+	        };
+	      case _actions.RECEIVEMESSAGE:
+	        console.log('awefwekf', action.payload);
+	        return {
+	          v: _extends({}, state, { list: [].concat(_toConsumableArray(state.list), [action.payload]) })
+	        };
+	      case _actions.ADDTYPER:
+	        return {
+	          v: _extends({}, state, { typingList: [].concat(_toConsumableArray(state.typingList), [action.payload]) })
+	        };
+	      case _actions.REMOVETYPER:
+	        var temp = [];
+	        state.typingList.forEach(function (user) {
+	          if (action.payload !== user) {
+	            temp.push(user);
+	          }
+	        });
+	        return {
+	          v: _extends({}, state, { typingList: temp })
+	        };
+	      default:
+	        return {
+	          v: state
+	        };
+	    }
+	  }();
+
+	  if ((typeof _ret === "undefined" ? "undefined" : _typeof(_ret)) === "object") return _ret.v;
 	};
 
 	var _actions = __webpack_require__(507);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-	var INITIAL_STATE = { channelID: "", name: "", list: [] };
+	var INITIAL_STATE = { channelID: "", name: "", list: [], typingList: [] };
 
 /***/ },
 /* 585 */

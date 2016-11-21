@@ -2,30 +2,44 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux'
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router';
-import {messages, newMessage, receiveMessage} from '../actions/actions'
+import {messages, newMessage, receiveMessage, type, stopTyping} from '../actions/actions'
 import io from 'socket.io-client';
 
-const socket = io('', { path: '/api/chat' });
+let socket = null;
 
 class ChatPage extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      input: ""
+      input: "",
+      typing: false,
+      typerList: []
     };
   }
 
   componentDidMount () {
-    const {receiveMessage} = this.props;
+    socket = io('', { path: '/api/chat' });
+    const {receiveMessage, type, stopTyping} = this.props;
     var that = this;
     this.props.messages(this.props.chatData.channelID);
     socket.emit('chatmounted', this.props.userName);
     socket.emit('join channel', this.props.chatData.channelID);
     socket.on('new message', function(msg) {
-      console.log('this.props', this.props)
+      console.log('this.props', this.props);
       receiveMessage(msg);
     });
+    socket.on('typing', function(user) {
+      type(user);
+    });
+    socket.on('stop typing', function(user) {
+      stopTyping(user);
+    });
+  }
+
+  componentWillUnmount() {
+    console.log("isthisunmounting");
+    socket.emit('leave channel', this.props.chatData.channelID);
   }
 
   componentDidUpdate() {
@@ -35,6 +49,7 @@ class ChatPage extends Component {
   }
 
   chatMessages() {
+    console.log("chatstate", this.state);
     return (this.props.chatData.list).map((entry) => {
       return(
         <div>
@@ -49,6 +64,14 @@ class ChatPage extends Component {
     this.setState({
       input: e.target.value
     });
+    if(e.target.value.length > 0 && !this.state.typing) {
+      socket.emit('typing', {user: this.props.userName, channel: this.props.chatData.channelID});
+      this.setState({typing: true});
+    }
+    if(e.target.value.length === 0 && this.state.typing) {
+      socket.emit('stop typing', {user: this.props.userName, channel: this.props.chatData.channelID});
+      this.setState({typing: false});
+    }
   }
 
   submitMessage(e) {
@@ -61,10 +84,19 @@ class ChatPage extends Component {
       user: this.props.userName
     };
     socket.emit('new message', data);
+    socket.emit('stop typing', {user: this.props.userName, channel: this.props.chatData.channelID});
     this.props.newMessage(data);
     this.props.receiveMessage(data);
-    this.setState({ input: "" }, function() {
+    this.setState({ input: "", typing: false }, function() {
       document.getElementById("hiii").value=this.state.input;
+    });
+  }
+
+  typers() {
+    return (this.props.chatData.typingList).map((user) => {
+      return (
+        <span>{user}</span>
+      );
     });
   }
 
@@ -87,6 +119,10 @@ class ChatPage extends Component {
         />
         </form>
         <Button onClick={this.submitMessage.bind(this)}>Submit</Button>
+        <div>
+        {this.typers()}
+        <span> is typing...</span>
+        </div>
       </div>
     )
   }
@@ -102,6 +138,8 @@ export default connect(
   {
     messages,
     newMessage,
-    receiveMessage
+    receiveMessage,
+    type,
+    stopTyping
   }
 )(ChatPage);

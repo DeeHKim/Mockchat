@@ -5,6 +5,8 @@ export const EVENT = 'EVENT'
 export const SETCHANNEL = 'SETCHANNEL'
 export const MESSAGES = 'MESSAGES'
 export const RECEIVEMESSAGE = 'RECEIVEMESSAGE'
+export const ADDTYPER = "ADDTYPER"
+export const REMOVETYPER = "REMOVETYPER"
 
 
 
@@ -68,4 +70,18 @@ export function newMessage(input) {
     console.log('fuck you');
   });
 };
+}
+
+export function type(user) {
+  return {
+    type: ADDTYPER,
+    payload: user
+  }
+}
+
+export function stopTyping(user) {
+  return {
+    type: REMOVETYPER,
+    payload: user
+  }
 }
