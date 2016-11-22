@@ -63,7 +63,7 @@
 /******/ 	}
 
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "04fa9d52f77d1c9e109b"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "f98553b535862f94175e"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 
@@ -47464,7 +47464,12 @@
 	  _createClass(ChatPage, [{
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      socket = (0, _socket2.default)('', { path: '/api/chat' });
+	      socket = (0, _socket2.default)('', {
+	        path: '/api/chat',
+	        reconnection: true,
+	        reconnectionDelay: 1000,
+	        reconnectionAttempts: 10 });
+	      console.log('socket', socket);
 	      var _props = this.props,
 	          receiveMessage = _props.receiveMessage,
 	          type = _props.type,

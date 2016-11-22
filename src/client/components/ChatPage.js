@@ -19,7 +19,12 @@ class ChatPage extends Component {
   }
 
   componentDidMount () {
-    socket = io('', { path: '/api/chat' });
+    socket = io('', {
+            path: '/api/chat',
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 10 });
+    console.log('socket', socket);
     const {receiveMessage, type, stopTyping} = this.props;
     var that = this;
     this.props.messages(this.props.chatData.channelID);
