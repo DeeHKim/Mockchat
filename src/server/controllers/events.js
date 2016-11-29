@@ -9,7 +9,7 @@ exports.getEvents = function(req, res) {
         console.log(err);
         return res.state(500).json({msg: 'internal server error'});
       }
-
+      
       res.json({
         data: data
       });

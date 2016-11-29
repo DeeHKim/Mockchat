@@ -63,7 +63,7 @@
 /******/ 	}
 
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "f98553b535862f94175e"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "7024b9e4429a25c17164"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 
@@ -47478,7 +47478,11 @@
 	      var that = this;
 	      this.props.messages(this.props.chatData.channelID);
 	      socket.emit('chatmounted', this.props.userName);
-	      socket.emit('join channel', this.props.chatData.channelID);
+	      var obj = {
+	        channelid: this.props.chatData.channelID,
+	        username: this.props.userName
+	      };
+	      socket.emit('join channel', obj);
 	      socket.on('new message', function (msg) {
 	        console.log('this.props', this.props);
 	        receiveMessage(msg);
@@ -47488,6 +47492,9 @@
 	      });
 	      socket.on('stop typing', function (user) {
 	        stopTyping(user);
+	      });
+	      socket.on('test socket', function (msg) {
+	        console.log("YOOOOOOOOO", msg);
 	      });
 	    }
 	  }, {
@@ -47508,20 +47515,38 @@
 	    value: function chatMessages() {
 	      console.log("chatstate", this.state);
 	      return this.props.chatData.list.map(function (entry) {
-	        return _react2.default.createElement(
-	          'div',
-	          null,
-	          _react2.default.createElement(
-	            'span',
-	            { style: { fontWeight: "bold", fontSize: 25 } },
-	            entry.user
-	          ),
-	          _react2.default.createElement(
-	            'span',
+	        if (entry.image === "0") {
+	          return _react2.default.createElement(
+	            'div',
 	            null,
-	            entry.text
-	          )
-	        );
+	            _react2.default.createElement(
+	              'span',
+	              { style: { fontWeight: "bold", fontSize: 25 } },
+	              entry.user
+	            ),
+	            _react2.default.createElement(
+	              'span',
+	              null,
+	              entry.text
+	            )
+	          );
+	        }
+	        if (entry.image === "1") {
+	          return _react2.default.createElement(
+	            'div',
+	            null,
+	            _react2.default.createElement(
+	              'span',
+	              { style: { fontWeight: "bold", fontSize: 25 } },
+	              entry.user
+	            ),
+	            _react2.default.createElement(
+	              'span',
+	              null,
+	              _react2.default.createElement('img', { src: entry.text, stye: { width: 150, height: 150 } })
+	            )
+	          );
+	        }
 	      });
 	    }
 	  }, {
@@ -47548,6 +47573,7 @@
 	      var data = {
 	        eventID: this.props.chatData.channelID,
 	        text: this.state.input,
+	        image: "0",
 	        user: this.props.userName
 	      };
 	      socket.emit('new message', data);
@@ -47568,6 +47594,28 @@
 	          user
 	        );
 	      });
+	    }
+	  }, {
+	    key: 'read',
+	    value: function read(e) {
+	      var _this2 = this;
+
+	      console.log("OKAY!!", this.refs.myFile.files);
+	      var data = this.refs.myFile.files;
+	      var reader = new FileReader();
+	      e.preventDefault();
+	      var info = {};
+	      console.log("wtfisthisdata", data);
+	      reader.addEventListener('load', function (event) {
+	        info['text'] = event.target.result;
+	        info['eventID'] = _this2.props.chatData.channelID;
+	        info['user'] = _this2.props.userName;
+	        info["image"] = "1";
+	        _this2.props.newMessage(info);
+	        _this2.props.receiveMessage(info);
+	        socket.emit('new message', info);
+	      });
+	      reader.readAsDataURL(data[0]);
 	    }
 	  }, {
 	    key: 'render',
@@ -47602,6 +47650,17 @@
 	          _reactBootstrap.Button,
 	          { onClick: this.submitMessage.bind(this) },
 	          'Submit'
+	        ),
+	        _react2.default.createElement('input', {
+	          type: 'file',
+	          ref: 'myFile',
+	          id: 'picFile',
+	          accept: 'image/*'
+	        }),
+	        _react2.default.createElement(
+	          _reactBootstrap.Button,
+	          { onClick: this.read.bind(this) },
+	          'Upload Image'
 	        ),
 	        _react2.default.createElement(
 	          'div',

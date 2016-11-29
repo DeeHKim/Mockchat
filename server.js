@@ -2,11 +2,12 @@ var restify = require('restify');
 var fs = require('fs');
 var path = require('path');
 var mongoose = require('mongoose');
-var SocketIo = require('socket.io');
+global.SocketIo = require('socket.io');
 // var express = require('express');
 var bodyParser = require('body-parser');
 // var app = express();
 var cors = require('cors');
+global.socketInfo = {};
 
 mongoose.connect("mongodb://deehkim:Dankller51@ds153667.mlab.com:53667/heroku_2516295b");
 // mongoose.connect("mongodb://keybloc:keybloc123@ds149567.mlab.com:49567/keybloc_test");
@@ -70,10 +71,9 @@ app.post('/messages/newMessage', controllers.messages.newMessage);
 
 
 
-
 var server = app.listen(process.env.PORT || 3000, function() {
   console.log('%s listening at %s', 3000);
 });
 
-var io = new SocketIo(server, {path: '/api/chat'});
-var socketEvents = require('./src/server/socketEvents')(io);
+global.io = new SocketIo(server, {path: '/api/chat'});
+global.socketEvents = require('./src/server/socketEvents')(io);

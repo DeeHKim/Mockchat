@@ -29,7 +29,11 @@ class ChatPage extends Component {
     var that = this;
     this.props.messages(this.props.chatData.channelID);
     socket.emit('chatmounted', this.props.userName);
-    socket.emit('join channel', this.props.chatData.channelID);
+    var obj = {
+      channelid: this.props.chatData.channelID,
+      username: this.props.userName
+    };
+    socket.emit('join channel', obj);
     socket.on('new message', function(msg) {
       console.log('this.props', this.props);
       receiveMessage(msg);
@@ -39,6 +43,9 @@ class ChatPage extends Component {
     });
     socket.on('stop typing', function(user) {
       stopTyping(user);
+    });
+    socket.on('test socket', function(msg) {
+      console.log("YOOOOOOOOO", msg);
     });
   }
 
@@ -56,13 +63,23 @@ class ChatPage extends Component {
   chatMessages() {
     console.log("chatstate", this.state);
     return (this.props.chatData.list).map((entry) => {
-      return(
-        <div>
-          <span style={{fontWeight: "bold", fontSize: 25}}>{entry.user}</span>
-          <span>{entry.text}</span>
-        </div>
-      )
-    })
+      if(entry.image === "0") {
+        return(
+          <div>
+            <span style={{fontWeight: "bold", fontSize: 25}}>{entry.user}</span>
+            <span>{entry.text}</span>
+          </div>
+        )
+      }
+      if(entry.image === "1"){
+        return(
+          <div>
+            <span style={{fontWeight: "bold", fontSize: 25}}>{entry.user}</span>
+            <span><img src={entry.text} stye={{width: 150, height: 150}}/></span>
+          </div>
+        )
+      }
+    });
   }
 
   handleInputChange(e) {
@@ -86,6 +103,7 @@ class ChatPage extends Component {
     let data = {
       eventID: this.props.chatData.channelID,
       text: this.state.input,
+      image: "0",
       user: this.props.userName
     };
     socket.emit('new message', data);
@@ -105,6 +123,25 @@ class ChatPage extends Component {
     });
   }
 
+  read(e) {
+    console.log("OKAY!!", this.refs.myFile.files);
+    let data = this.refs.myFile.files;
+    let reader = new FileReader();
+    e.preventDefault();
+    let info = {};
+    console.log("wtfisthisdata", data);
+    reader.addEventListener('load', (event) => {
+      info['text'] = event.target.result;
+      info['eventID'] = this.props.chatData.channelID;
+      info['user'] = this.props.userName;
+      info["image"] = "1";
+      this.props.newMessage(info);
+      this.props.receiveMessage(info);
+      socket.emit('new message', info);
+    });
+    reader.readAsDataURL(data[0]);
+  }
+
   render() {
     return (
       <div>
@@ -117,13 +154,20 @@ class ChatPage extends Component {
         </div>
         <form onSubmit={this.submitMessage.bind(this)}>
         <input
-        id="hiii"
-        type="text"
-        value={this.state.input}
-        onChange={this.handleInputChange.bind(this)}
+          id="hiii"
+          type="text"
+          value={this.state.input}
+          onChange={this.handleInputChange.bind(this)}
         />
         </form>
         <Button onClick={this.submitMessage.bind(this)}>Submit</Button>
+        <input
+          type="file"
+          ref="myFile"
+          id="picFile"
+          accept="image/*"
+        />
+        <Button onClick={this.read.bind(this)}>Upload Image</Button>
         <div>
         {this.typers()}
         <span> is typing...</span>

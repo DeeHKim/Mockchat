@@ -1,6 +1,6 @@
 exports = module.exports = function(io) {
   io.on('connection', function(socket) {
-
+    console.log("HELLOHIHOWAREYA");
     socket.on('chatmounted', function(user) {
       console.log('user"s socket id', socket.id);
     });
@@ -13,7 +13,11 @@ exports = module.exports = function(io) {
     });
 
     socket.on('join channel', function(channel) {
-      var channelid = JSON.stringify(channel);
+      var channelid = JSON.stringify(channel.channelid);
+      socketInfo[channel.username] = {
+        currentSocket: socket,
+        currentChannel: channelid
+      };
       socket.join(channelid);
     });
 

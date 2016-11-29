@@ -10,6 +10,7 @@ var messageSchema = mongoose.Schema({
   },
   text: String,
   user: String,
+  image: String,
   created: {
     type: Date,
     default: Date.now
